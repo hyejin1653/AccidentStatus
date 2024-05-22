@@ -1,0 +1,24 @@
+{
+  "name": "accidentsystem",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "app": "./app.js"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "pkg . --target node12-win-x64"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.1",
+    "fs": "0.0.1-security",
+    "mkdir": "0.0.2",
+    "pkg": "^5.8.0",
+    "ws": "^8.8.1"
+  }
+}
