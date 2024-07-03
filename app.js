@@ -171,72 +171,70 @@ function dataForm() {
 //   //const exifile = await fs.existsSync(realPath)
 // }
 
-wss.on("connection", (ws, request) => {
-  let timer, time;
-  let cont = 0;
+let timer, time;
+let originData = null;
+let dataArr = [];
+function sendDt() {
+  dataArr = [];
+  let obj = dataForm();
 
+  for (let data of sendData) {
+    Object.assign(data, obj);
+    dataArr.push(data);
+  }
+
+  dataArr = JSON.stringify(dataArr);
+
+  let level = obj.LEVEL;
+  let eventLevel = undefined;
+
+  if (originData != undefined) {
+    eventLevel = originData.LEVEL;
+  }
+
+  if (level == 0) {
+    //등급마다 보내는 시간이 다름
+    time = 60;
+  } else if (level == 1) {
+    time = 30;
+  } else if (level == 2) {
+    time = 10;
+  } else if (level == 3) {
+    time = 3;
+  }
+
+  //등급이 변하면 바로 전송
+  if (eventLevel != level && eventLevel != undefined) {
+    time = 1;
+  }
+
+  console.log(dataArr, time);
+
+  originData = obj;
+
+  clearInterval(timer);
+  timer = setInterval(sendDt, 1000 * time);
+
+  //console.log(dataArr, time);
+}
+
+timer = setInterval(sendDt, 1000);
+
+wss.on("connection", (ws, request) => {
   if (ws.readyState === ws.OPEN) {
     console.log("접속");
+    //setInterval(() => ws.send(dataArr),);
+    ws.send(dataArr);
 
-    let originData = null;
-    function sendDt() {
-      //clearInterval(timer);
-      // if (cont > 100) {
-      //   clearInterval(timer);
-      //   console.log("100번 종료");
-      //   //return;
-      // }
-
-      let dataArr = [];
-      let obj = dataForm();
-
-      //console.log(obj);
-
-      for (let data of sendData) {
-        Object.assign(data, obj);
-        dataArr.push(data);
-      }
-
-      //let writeArr = dataArr;
-
-      dataArr = JSON.stringify(dataArr);
-      //console.log(dataArr, new Date().toLocaleString());
-
-      let level = obj.LEVEL;
-      let eventLevel = undefined;
-
-      if (originData != undefined) {
-        eventLevel = originData.LEVEL;
-      }
-
-      if (level == 0) {
-        //등급마다 보내는 시간이 다름
-        time = 60;
-      } else if (level == 1) {
-        time = 30;
-      } else if (level == 2) {
-        time = 10;
-      } else if (level == 3) {
-        time = 3;
-      }
-
-      //등급이 변하면 바로 전송
-      if (eventLevel != level && eventLevel != undefined) {
-        time = 1;
-      }
-
-      originData = obj;
-      //createLogFile(cont, writeArr[0]);
-
-      console.log(time);
-
-      //timer = setInterval(sendDt, 1000 * time);
-
-      console.log(dataArr);
+    function wsSend() {
       ws.send(dataArr);
     }
 
-    timer = setInterval(sendDt, 2000);
+    let wsInterval;
+    if (wsInterval != undefined) {
+      clearInterval(wsInterval);
+    }
+    wsInterval = setInterval(wsSend, 1000);
   }
 
   ws.onclose = () => {
